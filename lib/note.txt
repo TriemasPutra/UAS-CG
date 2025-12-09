@@ -1,0 +1,2 @@
+File glew32.lib wajib ada.
+File libfreeglut.a opsional

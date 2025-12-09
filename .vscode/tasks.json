@@ -6,11 +6,22 @@
       "type": "shell",
       "command": "g++",
       "args": [
-        "-IC:/MinGW/include",
-        "-LC:/MinGW/lib",
+        // Unkomen kedua line dibawah jika menggunakan global library (pada path C:/MinGW)
+        // Pastikan file (baca pada lib/note.txt, build/note.txt, dan include/note.txt)
+        // yang dibutuhkan ada pada path tersebut
+        // "-IC:/MinGW/include",
+        // "-LC:/MinGW/lib",
+
+        // Gunakan kedua line dibawah jika menggunakan library lokal
+        // Include, lib, dan bin berada pada folder project
+        // Zip file ini sudah menggunakan lokal library
+        // Komentari jika menggunakan global library
+        "-I./include",
+        "-L./lib",
         "${fileBasenameNoExtension}.cpp",
         "-o",
         "build/${fileBasenameNoExtension}.exe",
+        "-lglew32",
         "-lfreeglut",
         "-lopengl32",
         "-lglu32"

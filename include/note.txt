@@ -1,0 +1,12 @@
+File stb_image.h digunakan untuk loading texture
+File pada folder GL:
+    freeglut_ext.h
+    freeglut_std.h
+    freeglut.h
+    glut.h
+diperlukan oleh FreeGlut untuk berjalan (compile -> build file .exe)
+    eglew.h
+    glew.h
+    glxew.h
+    wglew.h
+diperlukan oleh GLEW untuk berjalan (compile -> build file .exe)
