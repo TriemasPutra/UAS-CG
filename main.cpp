@@ -20,11 +20,13 @@
   */
 
 // Include glew sebelum freeglut
-#include "include/GL/freeglut_std.h"
 #include "include/GL/glew.h"
 #include "include/GL/freeglut.h"
 // Include stb_image.h untuk keperluan loading image
 #include "include/stb_image.h"
+#include <cmath>
+
+float yaw = 0.0f, radius = 80.0f;
 
 void myReshape(int w, int h) {
     glViewport(0, 0, w, h);
@@ -41,8 +43,8 @@ void drawCube(float x, float y, float z, double size) {
     glPopMatrix();
 }
 
-void drawCuboid(float x, float y, float z, float width,
-                float height, float depth, float angle=0.0f) {
+void drawCuboid(float x, float y, float z,
+                float width, float height, float depth, float angle) {
     glPushMatrix();
         glTranslatef(x, y, z);
         glRotatef(angle, 0.0f, 0.0f, 1.0f);
@@ -52,36 +54,60 @@ void drawCuboid(float x, float y, float z, float width,
 }
 
 void drawSteve() {
-    // Kepala
-    glColor3f(1.0f, 0.0f, 0.0f);
-    drawCube(0.0f, 8.0f, 0.0f, 5.0);
-    // Badan
-    glColor3f(0.0f, 0.0f, 1.0f);
-    drawCuboid(0.0f, 4.0f, 0.0f,
-                4.0f, 6.0f, 2.0f);
+    // Kaki Kiri
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawCuboid(-1.0f, 0.0f, 0.0f,
+                2.0f, 5.0f, 2.0f, -5.0f);
+            // posisi X dari -1.5 sampai -0.5 di scale menjadi -2.0 sampai 0.0,
+            // posisi Y dari 0.5 sampai -0.5 di scale menjadi 2.5 sampai -2.5,
+            // posisi Z dari 0.5 sampai -0.5 di scale menjadi 1.0 sampai -1.0
+    
+    // Kaki Kanan
+    glColor3f(0.0f, 0.0f, 0.0f);
+    drawCuboid(1.0f, 0.0f, 0.0f,
+                2.0f, 5.0f, 2.0f, 5.0f);
+            // posisi X dari 1.5 sampai 0.5 di scale menjadi 2.0 sampai 0.0,
+            // posisi Y dari 0.5 sampai -0.5 di scale menjadi 2.5 sampai -2.5,
+            // posisi Z dari 0.5 sampai -0.5 di scale menjadi 1.0 sampai -1.0
+    // Kaki mentok di Y 2.5, bawahnya -2.5, lebar X dari -2.0 sampai 2.0
+
     // Lengan Kiri
     glColor3f(0.0f, 1.0f, 0.0f);
     drawCuboid(-3.0f, 4.0f, 0.0f,
                 2.0f, 5.0f, 2.0f, -10.0f);
+            // posisi X dari -3.5 sampai -2.5 di scale menjadi -4.0 sampai -2.0,
+            // posisi Y dari 3.5 sampai 4.5 di scale menjadi 1.5 sampai 6.5,
+            // posisi Z dari 0.5 sampai -0.5 di scale menjadi 1.0 sampai -1.0
+    
     // Lengan Kanan
     glColor3f(0.0f, 1.0f, 0.0f);
     drawCuboid(3.0f, 4.0f, 0.0f,
                 2.0f, 5.0f, 2.0f, 10.0f);
-    // Kaki Kiri
-    glColor3f(0.0f, 0.0f, 0.0f);
-    drawCuboid(-1.0f, 0.0f, 0.0f,
-                2.0f, 5.0f, 2.0f);
-    // Kaki Kanan
-    glColor3f(0.0f, 0.0f, 0.0f);
-    drawCuboid(1.0f, 0.0f, 0.0f,
-                2.0f, 5.0f, 2.0f);
+            // posisi X dari 3.5 sampai 2.5 di scale menjadi 4.0 sampai -2.0,
+            // posisi Y dari 3.5 sampai 4.5 di scale menjadi 1.5 sampai 6.5,
+            // posisi Z dari 0.5 sampai -0.5 di scale menjadi 1.0 sampai -1.0
+    
+    // Badan
+    glColor3f(0.0f, 0.0f, 1.0f);
+    drawCuboid(0.0f, 4.5f, 0.0f,
+                4.0f, 4.0f, 2.0f, 0.0f);
+            // posisi X dari -0.5 sampai 0.5 di scale menjadi -2.0 sampai 2.0,
+            // posisi Y dari 4.0 sampai 5.0 di scale menjadi 2.5 sampai 6.5,
+            // posisi Z dari 0.5 sampai -0.5 di scale menjadi 1.0 sampai -1.0
+    
+    // Kepala
+    glColor3f(1.0f, 0.0f, 0.0f);
+    drawCube(0.0f, 8.0f, 0.0f, 5.0);
+            // posisi X dari -2.5 sampai 2.5,
+            // posisi Y dari 5.5 sampai 10.5,
+            // posisi Z dari -2.5 sampai 2.5
 }
 
 void drawTree() {
     // Batang pohon
-    glColor3f(0.55f, 0.27f, 0.07f); // Coklat
+    glColor3f(0.5f, 0.2f, 0.1f); // Coklat
     drawCuboid(15.0f, 7.5f, 5.0f,
-                2.0f, 15.0f, 2.0f);
+                2.0f, 15.0f, 2.0f, 0.0f);
     // Daun pohon (menggunakan beberapa bola untuk efek)
     glColor3f(0.0f, 0.5f, 0.0f); // Hijau
     drawCube(15.0f, 8.5f, 5.0f, 5.0);
@@ -96,10 +122,10 @@ void drawBall(float x, float y, float z,
 }
 
 void drawPokeball() {
-    glPushMatrix();
-        glTranslatef(0.0f, 13.0f, 0.0f);
-        glutSolidSphere(4.0f, 20, 20);
-    glPopMatrix();
+    // glPushMatrix();
+    //     glTranslatef(0.0f, 13.0f, 0.0f);
+    //     glutSolidSphere(1.0f, 20, 20);
+    // glPopMatrix();
 }
 
 void display() {
@@ -107,10 +133,13 @@ void display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluLookAt(0.0, 0.0, 50.0,  // Eye position
-              0.0, 0.0, 0.0,  // Look at point
+    float camX = radius * sinf(yaw);
+    float camZ = radius * cosf(yaw);
+
+    gluLookAt(camX, 0.0, camZ,  // Eye position
+              0.0, 0.0, 0.0, // Look at point
               0.0, 5.0, 0.0); // Up vector
-    
+
     // Rendering code would go here
     drawSteve();
     drawTree();
@@ -123,6 +152,23 @@ void keyInput(unsigned char key, int x, int y) {
     switch (key) {
         case 27: // Tombol 'Esc' untuk keluar
             exit(0);
+            break;
+        case 'w': // Maju mendekati objek
+            radius -= 2;
+            if (radius < 30.0f) radius = 30.0f;
+            glutPostRedisplay();
+            break;
+        case 's': // Mundur menjauhi objek
+            radius += 2;
+            glutPostRedisplay();
+            break;
+        case 'a': // Geser ke kiri
+            yaw -= 0.5f;
+            glutPostRedisplay();
+            break;
+        case 'd': // Geser ke kanan
+            yaw += 0.5f;
+            glutPostRedisplay();
             break;
         default:
             break;
