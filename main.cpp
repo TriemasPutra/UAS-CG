@@ -20,6 +20,7 @@
   */
 
 // Include glew sebelum freeglut
+#include "include/GL/freeglut_std.h"
 #include "include/GL/glew.h"
 #include "include/GL/freeglut.h"
 // Include stb_image.h untuk keperluan loading image
@@ -53,7 +54,7 @@ void drawCuboid(float x, float y, float z, float width,
 void drawSteve() {
     // Kepala
     glColor3f(1.0f, 0.0f, 0.0f);
-    drawCube(0.0f, 8.0f, 0.0f, 5.0f);
+    drawCube(0.0f, 8.0f, 0.0f, 5.0);
     // Badan
     glColor3f(0.0f, 0.0f, 1.0f);
     drawCuboid(0.0f, 4.0f, 0.0f,
@@ -83,10 +84,20 @@ void drawTree() {
                 2.0f, 15.0f, 2.0f);
     // Daun pohon (menggunakan beberapa bola untuk efek)
     glColor3f(0.0f, 0.5f, 0.0f); // Hijau
+    drawCube(15.0f, 8.5f, 5.0f, 5.0);
+}
+
+void drawBall(float x, float y, float z,
+                double r, int lintang, int bujur) {
     glPushMatrix();
-        glTranslatef(15.0f, 17.5f, 5.0f);
-        glutSolidSphere(5.0f, 20, 20);
-        glTranslatef(-3.0f, 2.0f, 5.0f);
+        glTranslatef(x, y, z);
+        glutSolidSphere(r, lintang, bujur);
+    glPopMatrix();
+}
+
+void drawPokeball() {
+    glPushMatrix();
+        glTranslatef(0.0f, 13.0f, 0.0f);
         glutSolidSphere(4.0f, 20, 20);
     glPopMatrix();
 }
@@ -103,6 +114,7 @@ void display() {
     // Rendering code would go here
     drawSteve();
     drawTree();
+    drawPokeball();
 
     glutSwapBuffers();
 }
