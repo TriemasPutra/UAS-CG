@@ -1,3 +1,5 @@
+#include <iostream>
+#include <ostream>
 #include <string>
 #include <fstream>
 #include "include/getBMP.h"
