@@ -11,11 +11,9 @@
  */
 
  /**
-  * X+ Menuju Kanan
-  * X- Menuju Kiri
-  * Y+ Menuju Atas
-  * Y- Menuju Bawah
-  * Z+ Menuju Kedepan (Terlihat lebih besar karena mendekat)
+  * X+ Menuju Kanan, X- Menuju Kiri
+  * Y+ Menuju Atas, Y- Menuju Bawah
+  * Z+ Menuju Kedepan (Terlihat lebih besar karena mendekat),
   * Z- Menuju Belakang (Terlihat lebih kecil karena menjauh)
   */
 
@@ -108,24 +106,27 @@ void drawTree() {
     glColor3f(0.5f, 0.2f, 0.1f); // Coklat
     drawCuboid(15.0f, 7.5f, 5.0f,
                 2.0f, 15.0f, 2.0f, 0.0f);
-    // Daun pohon (menggunakan beberapa bola untuk efek)
+            // posisi X dari 14.5 sampai 15.5 di scale menjadi 14.0 sampai 16.0,
+            // posisi Y dari 7.0 sampai 8.0 di scale menjadi 0.0 sampai 15.0,
+            // posisi Z dari 4.5 sampai 5.5 di scale menjadi 4.0 sampai 6.0
+    // Daun pohon
     glColor3f(0.0f, 0.5f, 0.0f); // Hijau
-    drawCube(15.0f, 8.5f, 5.0f, 5.0);
+    drawCube(15.0f, 17.5f, 5.0f, 5.0);
 }
 
-void drawBall(float x, float y, float z,
-                double r, int lintang, int bujur) {
-    glPushMatrix();
-        glTranslatef(x, y, z);
-        glutSolidSphere(r, lintang, bujur);
-    glPopMatrix();
-}
+// void drawBall(float x, float y, float z,
+//                 double r, int lintang, int bujur) {
+//     glPushMatrix();
+//         glTranslatef(x, y, z);
+//         glutSolidSphere(r, lintang, bujur);
+//     glPopMatrix();
+// }
 
 void drawPokeball() {
-    // glPushMatrix();
-    //     glTranslatef(0.0f, 13.0f, 0.0f);
-    //     glutSolidSphere(1.0f, 20, 20);
-    // glPopMatrix();
+    glPushMatrix();
+        glTranslatef(0.0f, 13.0f, 0.0f);
+        glutSolidSphere(1.0f, 20, 20);
+    glPopMatrix();
 }
 
 void display() {
@@ -160,6 +161,7 @@ void keyInput(unsigned char key, int x, int y) {
             break;
         case 's': // Mundur menjauhi objek
             radius += 2;
+            if (radius > 100.0f) radius = 100.0f;
             glutPostRedisplay();
             break;
         case 'a': // Geser ke kiri
@@ -182,7 +184,7 @@ int main(int argc, char** argv) {
     glutInitWindowSize(800, 600);
     glutCreateWindow("Steve Kejatuhan Pokeball dibawah Oak Tree");
 
-    //glewInit();
+    glewInit();
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.5f, 0.8f, 0.92f, 1.0f); // Warna langit cerah
 
