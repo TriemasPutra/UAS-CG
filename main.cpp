@@ -24,34 +24,77 @@
 #include <cmath>
 
 float yaw = 0.0f, radius = 80.0f;
-unsigned int texture[1];
+unsigned int texture[24];
 
-GLuint steveTexID;
+GLuint loadTexture(std::string filepath) {
+    imageFile *image;
+    image = getBMP(filepath);
 
-void loadSteveTexture() {
-    imageFile* img = getBMP("texture/steve.bmp");
+    // Check if image loaded successfully
+    if (image == nullptr || image->data == nullptr) {
+        printf("ERROR: Failed to load texture: %s\n", filepath.c_str());
+        return 0;
+    }
+    
+    printf("Loading: %s (Size: %dx%d)\n", filepath.c_str(), image->width, image->height);
 
-    glGenTextures(1, &steveTexID);
-    glBindTexture(GL_TEXTURE_2D, steveTexID);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
     glTexImage2D(
         GL_TEXTURE_2D,
         0,
-        GL_RGBA8,
-        img->width,
-        img->height,
+        GL_RGBA,
+        image->width,
+        image->height,
         0,
         GL_RGBA,
         GL_UNSIGNED_BYTE,
-        img->data
+        image->data
     );
-    
-    delete img;
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    // Bersihin memori biar gak berat
+    delete[] image->data;
+    delete image;
+
+    printf("Texture ID %d loaded successfully\n", textureID);
+    return textureID;
+}
+
+void loadAllTextures() {
+    // Texture buat Steve
+    texture[0] = loadTexture("texture/steve-bmp/head-r.bmp");
+    texture[1] = loadTexture("texture/steve-bmp/head-f.bmp");
+    texture[2] = loadTexture("texture/steve-bmp/head-l.bmp");
+    texture[3] = loadTexture("texture/steve-bmp/head-b.bmp");
+    texture[4] = loadTexture("texture/steve-bmp/head-top.bmp");
+    texture[5] = loadTexture("texture/steve-bmp/head-bot.bmp");
+    texture[6] = loadTexture("texture/steve-bmp/torso-r.bmp");
+    texture[7] = loadTexture("texture/steve-bmp/torso-f.bmp");
+    texture[8] = loadTexture("texture/steve-bmp/torso-l.bmp");
+    texture[9] = loadTexture("texture/steve-bmp/torso-b.bmp");
+    texture[10] = loadTexture("texture/steve-bmp/torso-top.bmp");
+    texture[11] = loadTexture("texture/steve-bmp/torso-bot.bmp");
+    texture[12] = loadTexture("texture/steve-bmp/arm-r.bmp");
+    texture[13] = loadTexture("texture/steve-bmp/arm-f.bmp");
+    texture[14] = loadTexture("texture/steve-bmp/arm-l.bmp");
+    texture[15] = loadTexture("texture/steve-bmp/arm-b.bmp");
+    texture[16] = loadTexture("texture/steve-bmp/arm-top.bmp");
+    texture[17] = loadTexture("texture/steve-bmp/arm-bot.bmp");
+    texture[18] = loadTexture("texture/steve-bmp/leg-r.bmp");
+    texture[19] = loadTexture("texture/steve-bmp/leg-f.bmp");
+    texture[20] = loadTexture("texture/steve-bmp/leg-l.bmp");
+    texture[21] = loadTexture("texture/steve-bmp/leg-b.bmp");
+    texture[22] = loadTexture("texture/steve-bmp/leg-top.bmp");
+    texture[23] = loadTexture("texture/steve-bmp/leg-bot.bmp");
+
+
 }
 
 void myReshape(int w, int h) {
@@ -62,142 +105,122 @@ void myReshape(int w, int h) {
     gluPerspective(60.0, (double)w / (double)h, 1.0, 500.0);
 }
 
-void drawCube(float x, float y, float z, double size) {
-    glPushMatrix();
-        glTranslatef(x, y, z);
-        glutSolidCube(size);
-    glPopMatrix();
-}
-
-struct UV {
-    float u1, v1, u2, v2;
-};
-
-float U(float x) {
-    return x / 64.0f;
-}
-float V(float y) {
-    return 1.0f - (y / 64.0f);
-}
-
-UV HEAD_UV[6] = {
-    {U(8),  V(16), U(16), V(8)},   // front
-    {U(24), V(16), U(32), V(8)},   // back
-    {U(0),  V(16), U(8),  V(8)},   // left
-    {U(16), V(16), U(24), V(8)},   // right
-    {U(8),  V(8),  U(16), V(0)},   // top
-    {U(16), V(8),  U(24), V(0)}    // bottom
-};
-
-UV BODY_UV[6] = {
-    {U(20), V(32), U(28), V(20)}, // front (8×12)
-    {U(32), V(32), U(40), V(20)}, // back
-    {U(16), V(32), U(20), V(20)}, // left
-    {U(28), V(32), U(32), V(20)}, // right
-    {U(20), V(20), U(28), V(16)}, // top (8×4)
-    {U(28), V(20), U(36), V(16)}  // bottom (8×4)
-};
-
-UV ARM_UV[6] = {
-    {U(44), V(32), U(48), V(20)}, // front
-    {U(52), V(32), U(56), V(20)}, // back
-    {U(40), V(32), U(44), V(20)}, // left
-    {U(48), V(32), U(52), V(20)}, // right
-    {U(44), V(20), U(48), V(16)}, // top
-    {U(48), V(20), U(52), V(16)}  // bottom
-};
-
-UV LEG_UV[6] = {
-    {U(4), V(48), U(8), V(36)},  // front
-    {U(12),V(48), U(16),V(36)},  // back
-    {U(0), V(48), U(4), V(36)},  // left
-    {U(8), V(48), U(12),V(36)},  // right
-    {U(4), V(36), U(8), V(32)},  // top
-    {U(8), V(36), U(12),V(32)}   // bottom
-};
-
-void drawCuboid(float w, float h, float d, UV face[6]) {
-    float x = w/2, y = h/2, z = d/2;
-
+void drawRectangle(float length, float height, float depth) {
+    float x = length / 2;
+    float y = height / 2;
+    float z = depth / 2;
+    
     glBegin(GL_QUADS);
-
-    // FRONT
-    glTexCoord2f(face[0].u1, face[0].v2); glVertex3f(-x, -y,  z);
-    glTexCoord2f(face[0].u2, face[0].v2); glVertex3f( x, -y,  z);
-    glTexCoord2f(face[0].u2, face[0].v1); glVertex3f( x,  y,  z);
-    glTexCoord2f(face[0].u1, face[0].v1); glVertex3f(-x,  y,  z);
-
-    // BACK
-    glTexCoord2f(face[1].u1, face[1].v2); glVertex3f( x, -y, -z);
-    glTexCoord2f(face[1].u2, face[1].v2); glVertex3f(-x, -y, -z);
-    glTexCoord2f(face[1].u2, face[1].v1); glVertex3f(-x,  y, -z);
-    glTexCoord2f(face[1].u1, face[1].v1); glVertex3f( x,  y, -z);
-
-    // LEFT
-    glTexCoord2f(face[2].u1, face[2].v2); glVertex3f(-x, -y, -z);
-    glTexCoord2f(face[2].u2, face[2].v2); glVertex3f(-x, -y,  z);
-    glTexCoord2f(face[2].u2, face[2].v1); glVertex3f(-x,  y,  z);
-    glTexCoord2f(face[2].u1, face[2].v1); glVertex3f(-x,  y, -z);
-
-    // RIGHT
-    glTexCoord2f(face[3].u1, face[3].v2); glVertex3f( x, -y,  z);
-    glTexCoord2f(face[3].u2, face[3].v2); glVertex3f( x, -y, -z);
-    glTexCoord2f(face[3].u2, face[3].v1); glVertex3f( x,  y, -z);
-    glTexCoord2f(face[3].u1, face[3].v1); glVertex3f( x,  y,  z);
-
-    // TOP
-    glTexCoord2f(face[4].u1, face[4].v2); glVertex3f(-x,  y,  z);
-    glTexCoord2f(face[4].u2, face[4].v2); glVertex3f( x,  y,  z);
-    glTexCoord2f(face[4].u2, face[4].v1); glVertex3f( x,  y, -z);
-    glTexCoord2f(face[4].u1, face[4].v1); glVertex3f(-x,  y, -z);
-
-    // BOTTOM
-    glTexCoord2f(face[5].u1, face[5].v2); glVertex3f(-x, -y, -z);
-    glTexCoord2f(face[5].u2, face[5].v2); glVertex3f( x, -y, -z);
-    glTexCoord2f(face[5].u2, face[5].v1); glVertex3f( x, -y,  z);
-    glTexCoord2f(face[5].u1, face[5].v1); glVertex3f(-x, -y,  z);
-
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(-x, -y, z);
+        glTexCoord2f(0.0f, 0.0f); glVertex3f( x, -y, z);
+        glTexCoord2f(0.0f, 1.0f); glVertex3f( x,  y, z);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(-x,  y, z);
     glEnd();
 }
 
+void drawCube(int texIndex[],
+                float translateX, float translateY, float translateZ,
+                float length, float height, float depth) {
+    // Right face
+    glBindTexture(GL_TEXTURE_2D, texture[texIndex[0]]);
+    glPushMatrix();
+        glTranslatef(translateX + length / 2, translateY, translateZ);
+        glRotatef(90, 0, 1, 0);
+        drawRectangle(depth, height, 0);
+    glPopMatrix();
+    
+    // Front face
+    glBindTexture(GL_TEXTURE_2D, texture[texIndex[1]]);
+    glPushMatrix();
+        glTranslatef(translateX, translateY, translateZ + depth / 2);
+        drawRectangle(length, height, 0);
+    glPopMatrix();
+
+    // Left face
+    glBindTexture(GL_TEXTURE_2D, texture[texIndex[2]]);
+    glPushMatrix();
+        glTranslatef(translateX - length / 2, translateY, translateZ);
+        glRotatef(-90, 0, 1, 0);
+        drawRectangle(depth, height, 0);
+    glPopMatrix();
+
+    // Back face
+    glBindTexture(GL_TEXTURE_2D, texture[texIndex[3]]);
+    glPushMatrix();
+        glTranslatef(translateX, translateY, translateZ - depth / 2);
+        glRotatef(180, 0, 1, 0);
+        drawRectangle(length, height, 0);
+    glPopMatrix();
+
+    // Top face
+    glBindTexture(GL_TEXTURE_2D, texture[texIndex[4]]);
+    glPushMatrix();
+        glTranslatef(translateX, translateY + height / 2, translateZ);
+        glRotatef(-90, 1, 0, 0);
+        drawRectangle(length, depth, 0);
+    glPopMatrix();
+
+    // Bottom face
+    glBindTexture(GL_TEXTURE_2D, texture[texIndex[5]]);
+    glPushMatrix();
+        glTranslatef(translateX, translateY - height / 2, translateZ);
+        glRotatef(90, 1, 0, 0);  // Changed from -90 to 90
+        drawRectangle(length, depth, 0);
+    glPopMatrix();
+}
+
 void drawSteve() {
-    glBindTexture(GL_TEXTURE_2D, steveTexID);
-    glPushMatrix();
-    drawCuboid(8, 8, 8, HEAD_UV);          // head
-    glPopMatrix();
+    // Kepala Steve
+    int headTextureIndices[6] = {0, 1, 2, 3, 4, 5};
+    drawCube(
+        headTextureIndices,
+        0.0f, 10.0f, 0.0f,  // Changed Y position
+        5.0f, 5.0f, 5.0f
+    );
 
-    glPushMatrix();
-    glTranslatef(0, -10, 0);
-    drawCuboid(8, 12, 4, BODY_UV);         // body
-    glPopMatrix();
+    // Badan Steve
+    int bodyTextureIndices[6] = {6, 7, 8, 9, 10, 11};
+    drawCube(
+        bodyTextureIndices,
+        0.0f, 0.0f, 0.0f,  // Changed Y position to center
+        5.0f, 10.0f, 3.0f  // Adjusted proportions
+    );
 
-    glPushMatrix();
-    glTranslatef(-6, -10, 0);
-    drawCuboid(4, 12, 4, ARM_UV);          // left arm
-    glPopMatrix();
+    // Lengan Kanan Steve
+    int armTextureIndices[6] = {12, 13, 14, 15, 16, 17};
+    drawCube(
+        armTextureIndices,
+        4.0f, 2.0f, 0.0f,  // Adjusted position
+        2.0f, 10.0f, 2.0f  // Adjusted size
+    );
 
-    glPushMatrix();
-    glTranslatef(6, -10, 0);
-    drawCuboid(4, 12, 4, ARM_UV);          // right arm
-    glPopMatrix();
+    // Lengan Kiri Steve
+    drawCube(
+        armTextureIndices,
+        -4.0f, 2.0f, 0.0f,  // Adjusted position
+        2.0f, 10.0f, 2.0f
+    );
 
-    glPushMatrix();
-    glTranslatef(-2, -22, 0);
-    drawCuboid(4, 12, 4, LEG_UV);          // left leg
-    glPopMatrix();
+    // Kaki Kanan Steve
+    int legTextureIndices[6] = {18, 19, 20, 21, 22, 23};
+    drawCube(
+        legTextureIndices,
+        1.25f, -10.0f, 0.0f,  // Adjusted position
+        2.0f, 10.0f, 2.0f  // Adjusted size
+    );
 
-    glPushMatrix();
-    glTranslatef(2, -22, 0);
-    drawCuboid(4, 12, 4, LEG_UV);          // right leg
-    glPopMatrix();
+    // Kaki Kiri Steve
+    drawCube(
+        legTextureIndices,
+        -1.25f, -10.0f, 0.0f,  // Adjusted position
+        2.0f, 10.0f, 2.0f
+    );
 }
 
 void drawTree() {
     // Batang pohon
-    glColor3f(0.5f, 0.2f, 0.1f); // Coklat
+
     // Daun pohon
-    glColor3f(0.0f, 0.5f, 0.0f); // Hijau
-    drawCube(15.0f, 17.5f, 5.0f, 5.0);
 }
 
 void drawPokeball() {
@@ -267,7 +290,9 @@ int main(int argc, char** argv) {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.5f, 0.8f, 0.92f, 1.0f); // Warna langit cerah
-    loadSteveTexture();
+
+    loadAllTextures();
+
     glutReshapeFunc(myReshape);
     glutDisplayFunc(display);
     glutKeyboardFunc(keyInput);

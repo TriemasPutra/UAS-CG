@@ -1,5 +1,3 @@
-#include <iostream>
-#include <ostream>
 #include <string>
 #include <fstream>
 #include "include/getBMP.h"
@@ -57,11 +55,7 @@ imageFile *getBMP(std::string fileName)
         outRGBA->data[j + 3] = 0xFF;
     }
 
-    delete[] tempStore->data;
-    delete tempStore;
-
-    delete[] outRGB->data;
-    delete outRGB;
-    
+    delete[] tempStore;
+    delete[] outRGB;
     return outRGBA;
 }
