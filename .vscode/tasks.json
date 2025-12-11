@@ -19,6 +19,7 @@
         "-I./include",
         "-L./lib",
         "${fileBasenameNoExtension}.cpp",
+        "getBMP.cpp",
         "-o",
         "build/${fileBasenameNoExtension}.exe",
         "-lglew32",
