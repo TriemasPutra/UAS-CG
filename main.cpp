@@ -34,7 +34,7 @@ GLuint loadTexture(std::string filepath) {
         return 0;
     }
     
-    printf("Loading: %s (Size: %dx%d)\n", filepath.c_str(), image->width, image->height);
+    //printf("Loading: %s (Size: %dx%d)\n", filepath.c_str(), image->width, image->height);
 
     GLuint textureID;
     glGenTextures(1, &textureID);
@@ -61,7 +61,7 @@ GLuint loadTexture(std::string filepath) {
     delete[] image->data;
     delete image;
 
-    printf("Texture ID %d loaded successfully\n", textureID);
+    //printf("Texture ID %d loaded successfully\n", textureID);
     return textureID;
 }
 
@@ -98,9 +98,10 @@ void loadAllTextures() {
     texture[27] = loadTexture("texture/log/log-b.bmp");
     texture[28] = loadTexture("texture/log/log-top.bmp");
     texture[29] = loadTexture("texture/log/log-bot.bmp");
+    //
+
     // Texture buat Pokeball
-    texture[30] = loadTexture("texture/pokeball/pokeball-rlb.bmp");
-    texture[31] = loadTexture("texture/pokeball/pokeball-f.bmp");
+    texture[30] = loadTexture("texture/pokeball/pokeball-f.bmp");
 }
 
 void myReshape(int w, int h) {
@@ -180,115 +181,154 @@ void drawSteve() {
     int headTextureIndices[6] = {0, 1, 2, 3, 4, 5};
     drawCube(
         headTextureIndices,
-        0.0f, 22.5f, 0.0f,
-        5.0f, 5.0f, 5.0f // Y dari 20.0 sampai 25.0
+        0.0f, 8.5f, 0.0f,
+        2.5f, 3.0f, 2.5f // Y dari 20.0 sampai 25.0
     );
 
     // Badan Steve
     int bodyTextureIndices[6] = {6, 7, 8, 9, 10, 11};
     drawCube(
         bodyTextureIndices,
-        0.0f, 15.0f, 0.0f,
-        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
+        0.0f, 5.25f, 0.0f, // X dari -2.5 sampai 2.5
+        2.5f, 3.5f, 2.5f // Y dari 10.0 sampai 20.0
     );
 
     // Lengan Kanan Steve
     int armTextureIndices[6] = {12, 13, 14, 15, 16, 17};
     drawCube(
         armTextureIndices,
-        2.5f, 15.0f, 0.0f,
-        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
+        1.675f, 5.25f, 0.0f, // X dari 2.5 sampai 7.5
+        1.25f, 3.5f, 1.5f // Y dari 10.0 sampai 20.0
     );
 
     // Lengan Kiri Steve
     drawCube(
         armTextureIndices,
-        -2.5f, 15.0f, 0.0f,
-        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
+        -1.675f, 5.25f, 0.0f, // X dari -7.5 sampai -2.5
+        1.25f, 3.5f, 1.5f // Y dari 10.0 sampai 20.0
     );
 
     // Kaki Kanan Steve
     int legTextureIndices[6] = {18, 19, 20, 21, 22, 23};
     drawCube(
         legTextureIndices,
-        2.5f, 5.0f, 0.0f,
-        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
+        0.675f, 1.75f, 0.0f,
+        1.25f, 3.5f, 2.5f // Y dari 10.0 sampai 20.0
     );
 
     // Kaki Kiri Steve
     drawCube(
         legTextureIndices,
-        -2.5f, 5.0f, 0.0f,
-        5.0f, 10.0f, 5.0f // Y dari 0.0 sampai 10.0
+        -0.675f, 1.75f, 0.0f,
+        1.25f, 3.5f, 2.5f // Y dari 0.0 sampai 10.0
     );
 }
 
 void drawTree() {
     // Batang pohon dari Y 0.0 sampai 40.0
     int trunkTextureIndices[6] = {24, 25, 26, 27, 28, 29};
-    for (int i = 0; i < 8; i++) {    
+    for (int i = 0; i < 6; i++) {    
         drawCube(
             trunkTextureIndices,
-            0.0f, 2.5f + i * 5.0f, 10.0f,
+            0.0f, 2.5f + i * 5.0f, -20.0f,
             5.0f, 5.0f, 5.0f
         );
     }
-    /*drawCube(
-        trunkTextureIndices,
-        0.0f, 2.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 7.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );    
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 12.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 17.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 22.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 27.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 32.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 37.5f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );*/
     
     // Daun pohon
-    int leafTextureIndices[6] = {};
-    
-    drawCube(
-        trunkTextureIndices,
-        0.0f, 10.0f, 10.0f,
-        5.0f, 5.0f, 5.0f
-    );
+    int leafTextureIndices[6] = {0, 0, 0, 0, 0, 0}; // Gak pake tekstur khusus, pake tekstur kepala Steve aja
+    for (int i = 0; i < 3; i++) {
+        drawCube(
+            leafTextureIndices,
+            0.0f, 32.5f + i * 5.0f, -20.0f,
+            15.0f - i * 3.0f, 5.0f, 15.0f - i * 3.0f
+        );
+    }
+}
+
+void drawSphere(double radius, float translateX, float translateY,
+                float translateZ, int slices, int stacks) {
+    glPushMatrix();
+        glTranslatef(translateX, translateY, translateZ);
+        glBegin(GL_TRIANGLES);
+            for (int i = 0; i < stacks; ++i) {
+                double lat0 = M_PI * (-0.5 + (double)(i) / stacks);
+                double z0  = sin(lat0);
+                double zr0 =  cos(lat0);
+                double lat1 = M_PI * (-0.5 + (double)(i + 1) / stacks);
+                double z1 = sin(lat1);
+                double zr1 = cos(lat1);
+
+                for (int j = 0; j <= slices; ++j) {
+                double lng = 2 * M_PI * (double)(j - 1) / slices;
+                    double x = cos(lng);
+
+                    double y = sin(lng);
+
+                    glTexCoord2f(
+                        (float)(j - 1) / slices,
+                        (float)(i) / stacks
+                    );
+                    glVertex3f(
+                        radius * x * zr0,
+                        radius * y * zr0,
+                        radius * z0
+                    );
+                    glTexCoord2f(
+                        (float)(j - 1) / slices,
+                        (float)(i + 1) / stacks
+                    );
+                    glVertex3f(
+                        radius * x * zr1,
+                        radius * y * zr1,
+                        radius * z1
+                    );
+                    glTexCoord2f(
+                        (float)j / slices,
+                        (float)(i + 1) / stacks
+                    );
+                    glVertex3f(
+                        radius * cos(lng + 2 * M_PI / slices) * zr1,
+                        radius * sin(lng + 2 * M_PI / slices) * zr1,
+                        radius * z1
+                    );
+
+                    glTexCoord2f(
+                        (float)(j - 1) / slices,
+                        (float)(i) / stacks
+                    );
+                    glVertex3f(
+                        radius * x * zr0,
+                        radius * y * zr0,
+                        radius * z0
+                    );
+                    glTexCoord2f(
+                        (float)j / slices,
+                        (float)(i + 1) / stacks
+                    );
+                    glVertex3f(
+                        radius * cos(lng + 2 * M_PI / slices) * zr1,
+                        radius * sin(lng + 2 * M_PI / slices) * zr1,
+                        radius * z1
+                    );
+                    glTexCoord2f(
+                        (float)j / slices,
+                        (float)(i) / stacks
+                    );
+                    glVertex3f(
+                        radius * cos(lng + 2 * M_PI / slices) * zr0,
+                        radius * sin(lng + 2 * M_PI / slices) * zr0,
+                        radius * z0
+                    );
+                }
+            }
+        glEnd();
+    glPopMatrix();
 }
 
 void drawPokeball() {
-    glPushMatrix();
-        glTranslatef(0.0f, 25.0f, 0.0f);
-        glutSolidSphere(1.0f, 20, 20);
-    glPopMatrix();
+    glBindTexture(GL_TEXTURE_2D, texture[30]);
+    drawSphere(3.0f, 0.0f, 25.0f, 0.0f, 36, 36);
 }
 
 void display() {
@@ -304,7 +344,7 @@ void display() {
               0.0, 5.0, 0.0); // Up vector
 
     // Rendering code would go here
-    glColor3f(1.0f, 1.0f, 1.0f); // Putih untuk tekstur Steve
+    glColor3f(1.0f, 1.0f, 1.0f);
     drawSteve();
     drawTree();
     drawPokeball();
@@ -319,7 +359,7 @@ void keyInput(unsigned char key, int x, int y) {
             break;
         case 'w': // Maju mendekati objek
             radius -= 2;
-            if (radius < 30.0f) radius = 30.0f;
+            if (radius < 50.0f) radius = 50.0f;
             glutPostRedisplay();
             break;
         case 's': // Mundur menjauhi objek
