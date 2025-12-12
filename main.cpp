@@ -8,18 +8,16 @@
  * - 412024043 - Andrew Linardi
  */
 
- /**
-  * X+ Menuju Kanan, X- Menuju Kiri
-  * Y+ Menuju Atas, Y- Menuju Bawah
-  * Z+ Menuju Kedepan (Terlihat lebih besar karena mendekat),
-  * Z- Menuju Belakang (Terlihat lebih kecil karena menjauh)
-  */
+/**
+ * X+ Menuju Kanan, X- Menuju Kiri
+ * Y+ Menuju Atas, Y- Menuju Bawah
+ * Z+ Menuju Kedepan (Terlihat lebih besar karena mendekat),
+ * Z- Menuju Belakang (Terlihat lebih kecil karena menjauh)
+ */
 
 // Include glew sebelum freeglut
 #include "include/GL/glew.h"
 #include "include/GL/freeglut.h"
-// Include stb_image.h untuk keperluan loading image
-#include "include/stb_image.h"
 #include "include/getBMP.h"
 #include <cmath>
 
@@ -69,32 +67,40 @@ GLuint loadTexture(std::string filepath) {
 
 void loadAllTextures() {
     // Texture buat Steve
-    texture[0] = loadTexture("texture/steve-bmp/head-r.bmp");
-    texture[1] = loadTexture("texture/steve-bmp/head-f.bmp");
-    texture[2] = loadTexture("texture/steve-bmp/head-l.bmp");
-    texture[3] = loadTexture("texture/steve-bmp/head-b.bmp");
-    texture[4] = loadTexture("texture/steve-bmp/head-top.bmp");
-    texture[5] = loadTexture("texture/steve-bmp/head-bot.bmp");
-    texture[6] = loadTexture("texture/steve-bmp/torso-r.bmp");
-    texture[7] = loadTexture("texture/steve-bmp/torso-f.bmp");
-    texture[8] = loadTexture("texture/steve-bmp/torso-l.bmp");
-    texture[9] = loadTexture("texture/steve-bmp/torso-b.bmp");
-    texture[10] = loadTexture("texture/steve-bmp/torso-top.bmp");
-    texture[11] = loadTexture("texture/steve-bmp/torso-bot.bmp");
-    texture[12] = loadTexture("texture/steve-bmp/arm-r.bmp");
-    texture[13] = loadTexture("texture/steve-bmp/arm-f.bmp");
-    texture[14] = loadTexture("texture/steve-bmp/arm-l.bmp");
-    texture[15] = loadTexture("texture/steve-bmp/arm-b.bmp");
-    texture[16] = loadTexture("texture/steve-bmp/arm-top.bmp");
-    texture[17] = loadTexture("texture/steve-bmp/arm-bot.bmp");
-    texture[18] = loadTexture("texture/steve-bmp/leg-r.bmp");
-    texture[19] = loadTexture("texture/steve-bmp/leg-f.bmp");
-    texture[20] = loadTexture("texture/steve-bmp/leg-l.bmp");
-    texture[21] = loadTexture("texture/steve-bmp/leg-b.bmp");
-    texture[22] = loadTexture("texture/steve-bmp/leg-top.bmp");
-    texture[23] = loadTexture("texture/steve-bmp/leg-bot.bmp");
-
-
+    texture[0] = loadTexture("texture/steve/head-r.bmp");
+    texture[1] = loadTexture("texture/steve/head-f.bmp");
+    texture[2] = loadTexture("texture/steve/head-l.bmp");
+    texture[3] = loadTexture("texture/steve/head-b.bmp");
+    texture[4] = loadTexture("texture/steve/head-top.bmp");
+    texture[5] = loadTexture("texture/steve/head-bot.bmp");
+    texture[6] = loadTexture("texture/steve/torso-r.bmp");
+    texture[7] = loadTexture("texture/steve/torso-f.bmp");
+    texture[8] = loadTexture("texture/steve/torso-l.bmp");
+    texture[9] = loadTexture("texture/steve/torso-b.bmp");
+    texture[10] = loadTexture("texture/steve/torso-top.bmp");
+    texture[11] = loadTexture("texture/steve/torso-bot.bmp");
+    texture[12] = loadTexture("texture/steve/arm-r.bmp");
+    texture[13] = loadTexture("texture/steve/arm-f.bmp");
+    texture[14] = loadTexture("texture/steve/arm-l.bmp");
+    texture[15] = loadTexture("texture/steve/arm-b.bmp");
+    texture[16] = loadTexture("texture/steve/arm-top.bmp");
+    texture[17] = loadTexture("texture/steve/arm-bot.bmp");
+    texture[18] = loadTexture("texture/steve/leg-r.bmp");
+    texture[19] = loadTexture("texture/steve/leg-f.bmp");
+    texture[20] = loadTexture("texture/steve/leg-l.bmp");
+    texture[21] = loadTexture("texture/steve/leg-b.bmp");
+    texture[22] = loadTexture("texture/steve/leg-top.bmp");
+    texture[23] = loadTexture("texture/steve/leg-bot.bmp");
+    // Texture buat Log
+    texture[24] = loadTexture("texture/log/log-r.bmp");    
+    texture[25] = loadTexture("texture/log/log-f.bmp");
+    texture[26] = loadTexture("texture/log/log-l.bmp");
+    texture[27] = loadTexture("texture/log/log-b.bmp");
+    texture[28] = loadTexture("texture/log/log-top.bmp");
+    texture[29] = loadTexture("texture/log/log-bot.bmp");
+    // Texture buat Pokeball
+    texture[30] = loadTexture("texture/pokeball/pokeball-rlb.bmp");
+    texture[31] = loadTexture("texture/pokeball/pokeball-f.bmp");
 }
 
 void myReshape(int w, int h) {
@@ -174,58 +180,113 @@ void drawSteve() {
     int headTextureIndices[6] = {0, 1, 2, 3, 4, 5};
     drawCube(
         headTextureIndices,
-        0.0f, 10.0f, 0.0f,  // Changed Y position
-        5.0f, 5.0f, 5.0f
+        0.0f, 22.5f, 0.0f,
+        5.0f, 5.0f, 5.0f // Y dari 20.0 sampai 25.0
     );
 
     // Badan Steve
     int bodyTextureIndices[6] = {6, 7, 8, 9, 10, 11};
     drawCube(
         bodyTextureIndices,
-        0.0f, 0.0f, 0.0f,  // Changed Y position to center
-        5.0f, 10.0f, 3.0f  // Adjusted proportions
+        0.0f, 15.0f, 0.0f,
+        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
     );
 
     // Lengan Kanan Steve
     int armTextureIndices[6] = {12, 13, 14, 15, 16, 17};
     drawCube(
         armTextureIndices,
-        4.0f, 2.0f, 0.0f,  // Adjusted position
-        2.0f, 10.0f, 2.0f  // Adjusted size
+        2.5f, 15.0f, 0.0f,
+        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
     );
 
     // Lengan Kiri Steve
     drawCube(
         armTextureIndices,
-        -4.0f, 2.0f, 0.0f,  // Adjusted position
-        2.0f, 10.0f, 2.0f
+        -2.5f, 15.0f, 0.0f,
+        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
     );
 
     // Kaki Kanan Steve
     int legTextureIndices[6] = {18, 19, 20, 21, 22, 23};
     drawCube(
         legTextureIndices,
-        1.25f, -10.0f, 0.0f,  // Adjusted position
-        2.0f, 10.0f, 2.0f  // Adjusted size
+        2.5f, 5.0f, 0.0f,
+        5.0f, 10.0f, 5.0f // Y dari 10.0 sampai 20.0
     );
 
     // Kaki Kiri Steve
     drawCube(
         legTextureIndices,
-        -1.25f, -10.0f, 0.0f,  // Adjusted position
-        2.0f, 10.0f, 2.0f
+        -2.5f, 5.0f, 0.0f,
+        5.0f, 10.0f, 5.0f // Y dari 0.0 sampai 10.0
     );
 }
 
 void drawTree() {
-    // Batang pohon
-
+    // Batang pohon dari Y 0.0 sampai 40.0
+    int trunkTextureIndices[6] = {24, 25, 26, 27, 28, 29};
+    for (int i = 0; i < 8; i++) {    
+        drawCube(
+            trunkTextureIndices,
+            0.0f, 2.5f + i * 5.0f, 10.0f,
+            5.0f, 5.0f, 5.0f
+        );
+    }
+    /*drawCube(
+        trunkTextureIndices,
+        0.0f, 2.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 7.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );    
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 12.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 17.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 22.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 27.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 32.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 37.5f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );*/
+    
     // Daun pohon
+    int leafTextureIndices[6] = {};
+    
+    drawCube(
+        trunkTextureIndices,
+        0.0f, 10.0f, 10.0f,
+        5.0f, 5.0f, 5.0f
+    );
 }
 
 void drawPokeball() {
     glPushMatrix();
-        glTranslatef(0.0f, 13.0f, 0.0f);
+        glTranslatef(0.0f, 25.0f, 0.0f);
         glutSolidSphere(1.0f, 20, 20);
     glPopMatrix();
 }
