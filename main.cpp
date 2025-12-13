@@ -34,7 +34,7 @@ GLuint loadTexture(std::string filepath) {
         return 0;
     }
     
-    //printf("Loading: %s (Size: %dx%d)\n", filepath.c_str(), image->width, image->height);
+    printf("Loading: %s (Size: %dx%d)\n", filepath.c_str(), image->width, image->height);
 
     GLuint textureID;
     glGenTextures(1, &textureID);
@@ -106,6 +106,9 @@ void loadAllTextures() {
 
     // Texture buat Pokeball
     texture[34] = loadTexture("texture/pokeball/pokeball-f.bmp");
+
+    // Texture buat Earth Teapot
+    texture[35] = loadTexture("texture/earth.bmp");
 }
 
 void myReshape(int w, int h) {
@@ -134,6 +137,7 @@ void drawCube(int texIndex[],
                 float length, float height, float depth) {
     // Right face
     glBindTexture(GL_TEXTURE_2D, texture[texIndex[0]]);
+    glNormal3f(1.0f, 0.0f, 0.0f);
     glPushMatrix();
         glTranslatef(translateX + length / 2, translateY, translateZ);
         glRotatef(90, 0, 1, 0);
@@ -142,6 +146,7 @@ void drawCube(int texIndex[],
     
     // Front face
     glBindTexture(GL_TEXTURE_2D, texture[texIndex[1]]);
+    glNormal3f(0.0f, 0.0f, 1.0f);
     glPushMatrix();
         glTranslatef(translateX, translateY, translateZ + depth / 2);
         drawRectangle(length, height, 0);
@@ -149,6 +154,7 @@ void drawCube(int texIndex[],
 
     // Left face
     glBindTexture(GL_TEXTURE_2D, texture[texIndex[2]]);
+    glNormal3f(-1.0f, 0.0f, 0.0f);
     glPushMatrix();
         glTranslatef(translateX - length / 2, translateY, translateZ);
         glRotatef(-90, 0, 1, 0);
@@ -157,6 +163,7 @@ void drawCube(int texIndex[],
 
     // Back face
     glBindTexture(GL_TEXTURE_2D, texture[texIndex[3]]);
+    glNormal3f(0.0f, 0.0f, -1.0f);
     glPushMatrix();
         glTranslatef(translateX, translateY, translateZ - depth / 2);
         glRotatef(180, 0, 1, 0);
@@ -165,6 +172,7 @@ void drawCube(int texIndex[],
 
     // Top face
     glBindTexture(GL_TEXTURE_2D, texture[texIndex[4]]);
+    glNormal3f(0.0f, 1.0f, 0.0f);
     glPushMatrix();
         glTranslatef(translateX, translateY + height / 2, translateZ);
         glRotatef(-90, 1, 0, 0);
@@ -173,6 +181,7 @@ void drawCube(int texIndex[],
 
     // Bottom face
     glBindTexture(GL_TEXTURE_2D, texture[texIndex[5]]);
+    glNormal3f(0.0f, -1.0f, 0.0f);
     glPushMatrix();
         glTranslatef(translateX, translateY - height / 2, translateZ);
         glRotatef(90, 1, 0, 0);  // Changed from -90 to 90
@@ -231,23 +240,37 @@ void drawSteve() {
 void drawTree() {
     // Batang pohon dari Y 0.0 sampai 40.0
     int trunkTextureIndices[6] = {24, 25, 26, 27, 28, 29};
-    for (int i = 0; i < 4; i++) {    
+    for (int i = 0; i < 5; i++) {    
         drawCube(
             trunkTextureIndices,
-            0.0f, 2.5f + i * 5.0f, -20.0f,
+            0.0f, 2.5f + i * 5.0f, -10.0f,
             5.0f, 5.0f, 5.0f
         );
     }
-    
+
     // Daun pohon
     int leafTextureIndices[6] = {32, 33, 32, 33, 32, 33};
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 6; i++) {
         drawCube(
             leafTextureIndices,
-            0.0f, 22.5f + i * 5.0f, -20.0f,
-            15.0f - i * 3.0f, 5.0f, 15.0f - i * 3.0f
+            0.0f, 27.5f + i * 5.0f, -10.0f,
+            45.0f - i * 5.0f, 5.0f, 45.0f - i * 5.0f
         );
     }
+
+    // Tambahan daun berry
+    glBindTexture(GL_TEXTURE_2D, texture[31]);
+    glPushMatrix();
+        glTranslatef(5.0f, 30.0f, -20.0f);
+        drawRectangle(5.0f, 5.0f, 0);
+    glPopMatrix();
+
+    // Tambahan daun azalea
+    glBindTexture(GL_TEXTURE_2D, texture[30]);
+    glPushMatrix();
+        glTranslatef(-2.5f, 27.5f, -17.5f);
+        drawRectangle(5.0f, 5.0f, 0);
+    glPopMatrix();
 }
 
 void drawSphere(double radius, float translateX, float translateY,
@@ -266,7 +289,6 @@ void drawSphere(double radius, float translateX, float translateY,
                 for (int j = 0; j <= slices; ++j) {
                 double lng = 2 * M_PI * (double)(j - 1) / slices;
                     double x = cos(lng);
-
                     double y = sin(lng);
 
                     glTexCoord2f(
@@ -331,8 +353,16 @@ void drawSphere(double radius, float translateX, float translateY,
 }
 
 void drawPokeball() {
-    glBindTexture(GL_TEXTURE_2D, texture[30]);
-    drawSphere(3.0f, 0.0f, 25.0f, 0.0f, 36, 36);
+    glBindTexture(GL_TEXTURE_2D, texture[34]);
+    drawSphere(3.0f, 0.0f, 20.0f, 0.0f, 36, 36);
+}
+
+void drawEarth() {
+    glBindTexture(GL_TEXTURE_2D, texture[35]);
+    glPushMatrix();
+        glTranslatef(0.0f, -8.0f, -10.0f);
+        glutSolidTeapot(20.0);
+    glPopMatrix();
 }
 
 void display() {
@@ -346,11 +376,15 @@ void display() {
     gluLookAt(camX, 0.0, camZ,  // Eye position
               0.0, 0.0, 0.0, // Look at point
               0.0, 5.0, 0.0); // Up vector
+    
+    GLfloat lightPos[] = { 0.0f, 10.0f, 10.0f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
     // Mulai gambar objek
     drawSteve();
     drawTree();
     drawPokeball();
+    drawEarth();
 
     glutSwapBuffers();
 }
@@ -391,9 +425,22 @@ int main(int argc, char** argv) {
     glutCreateWindow("Steve Kejatuhan Pokeball dibawah Oak Tree");
 
     glewInit();
+
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.5f, 0.8f, 0.92f, 1.0f); // Warna langit cerah
+
+    glEnable(GL_LIGHTING);
+
+    glEnable(GL_LIGHT0);
+    GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+
+    glEnable(GL_LIGHT1);
+    glEnable(GL_LIGHT2);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    //glClearColor(0.8f, 0.5f, 0.2f, 1.0f); // Warna langit senja
 
     loadAllTextures();
 
