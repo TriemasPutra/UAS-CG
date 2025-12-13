@@ -98,10 +98,14 @@ void loadAllTextures() {
     texture[27] = loadTexture("texture/log/log-b.bmp");
     texture[28] = loadTexture("texture/log/log-top.bmp");
     texture[29] = loadTexture("texture/log/log-bot.bmp");
-    //
+    // Texture buat Leaf
+    texture[30] = loadTexture("texture/leaf/azalea.bmp");
+    texture[31] = loadTexture("texture/leaf/berry.bmp");
+    texture[32] = loadTexture("texture/leaf/leaf1.bmp");
+    texture[33] = loadTexture("texture/leaf/leaf2.bmp");
 
     // Texture buat Pokeball
-    texture[30] = loadTexture("texture/pokeball/pokeball-f.bmp");
+    texture[34] = loadTexture("texture/pokeball/pokeball-f.bmp");
 }
 
 void myReshape(int w, int h) {
@@ -227,7 +231,7 @@ void drawSteve() {
 void drawTree() {
     // Batang pohon dari Y 0.0 sampai 40.0
     int trunkTextureIndices[6] = {24, 25, 26, 27, 28, 29};
-    for (int i = 0; i < 6; i++) {    
+    for (int i = 0; i < 4; i++) {    
         drawCube(
             trunkTextureIndices,
             0.0f, 2.5f + i * 5.0f, -20.0f,
@@ -236,11 +240,11 @@ void drawTree() {
     }
     
     // Daun pohon
-    int leafTextureIndices[6] = {0, 0, 0, 0, 0, 0}; // Gak pake tekstur khusus, pake tekstur kepala Steve aja
+    int leafTextureIndices[6] = {32, 33, 32, 33, 32, 33};
     for (int i = 0; i < 3; i++) {
         drawCube(
             leafTextureIndices,
-            0.0f, 32.5f + i * 5.0f, -20.0f,
+            0.0f, 22.5f + i * 5.0f, -20.0f,
             15.0f - i * 3.0f, 5.0f, 15.0f - i * 3.0f
         );
     }
@@ -343,8 +347,7 @@ void display() {
               0.0, 0.0, 0.0, // Look at point
               0.0, 5.0, 0.0); // Up vector
 
-    // Rendering code would go here
-    glColor3f(1.0f, 1.0f, 1.0f);
+    // Mulai gambar objek
     drawSteve();
     drawTree();
     drawPokeball();
