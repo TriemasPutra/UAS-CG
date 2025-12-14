@@ -21,8 +21,35 @@
 #include "include/getBMP.h"
 #include <cmath>
 
+void checkGLError(const char* function) {
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        printf("OpenGL ERROR at %s: %d\n", function, err);
+    }
+}
+
 float yaw = 0.0f, radius = 80.0f;
-unsigned int texture[24];
+unsigned int texture[37];
+
+enum PokeballState {
+    FALLING = 0,
+    SHAKING = 1,
+    CAUGHT = 2
+};
+
+PokeballState ballState = FALLING;
+
+float ballY = 25.0f;
+float ballFallSpeed = 0.3f;
+
+float shakeAngle = 0.0f;
+int shakeCount = 0;
+
+bool steveVisible = true;
+
+bool lightEnabled[4] = { true, true, true, true };
+
+bool animationRunning = true;
 
 GLuint loadTexture(std::string filepath) {
     imageFile *image;
@@ -61,7 +88,8 @@ GLuint loadTexture(std::string filepath) {
     delete[] image->data;
     delete image;
 
-    //printf("Texture ID %d loaded successfully\n", textureID);
+    printf("Texture ID %d loaded successfully\n", textureID);
+    checkGLError("loadTexture");
     return textureID;
 }
 
@@ -109,6 +137,11 @@ void loadAllTextures() {
 
     // Texture buat Earth Teapot
     texture[35] = loadTexture("texture/earth.bmp");
+
+    // Texture buat Background Space
+    texture[36] = loadTexture("texture/space.bmp");
+
+    checkGLError("loadAllTextures");
 }
 
 void myReshape(int w, int h) {
@@ -119,73 +152,76 @@ void myReshape(int w, int h) {
     gluPerspective(60.0, (double)w / (double)h, 1.0, 500.0);
 }
 
-void drawRectangle(float length, float height, float depth) {
+void drawRectangle(float length, float height) {
     float x = length / 2;
     float y = height / 2;
-    float z = depth / 2;
     
     glBegin(GL_QUADS);
-        glTexCoord2f(1.0f, 0.0f); glVertex3f(-x, -y, z);
-        glTexCoord2f(0.0f, 0.0f); glVertex3f( x, -y, z);
-        glTexCoord2f(0.0f, 1.0f); glVertex3f( x,  y, z);
-        glTexCoord2f(1.0f, 1.0f); glVertex3f(-x,  y, z);
+        glTexCoord2f(1.0f, 0.0f); glVertex3f(-x, -y, 0.0f);
+        glTexCoord2f(0.0f, 0.0f); glVertex3f( x, -y, 0.0f);
+        glTexCoord2f(0.0f, 1.0f); glVertex3f( x,  y, 0.0f);
+        glTexCoord2f(1.0f, 1.0f); glVertex3f(-x,  y, 0.0f);
     glEnd();
 }
 
 void drawCube(int texIndex[],
                 float translateX, float translateY, float translateZ,
                 float length, float height, float depth) {
-    // Right face
-    glBindTexture(GL_TEXTURE_2D, texture[texIndex[0]]);
-    glNormal3f(1.0f, 0.0f, 0.0f);
     glPushMatrix();
-        glTranslatef(translateX + length / 2, translateY, translateZ);
-        glRotatef(90, 0, 1, 0);
-        drawRectangle(depth, height, 0);
-    glPopMatrix();
-    
-    // Front face
-    glBindTexture(GL_TEXTURE_2D, texture[texIndex[1]]);
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glPushMatrix();
-        glTranslatef(translateX, translateY, translateZ + depth / 2);
-        drawRectangle(length, height, 0);
-    glPopMatrix();
-
-    // Left face
-    glBindTexture(GL_TEXTURE_2D, texture[texIndex[2]]);
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    glPushMatrix();
-        glTranslatef(translateX - length / 2, translateY, translateZ);
-        glRotatef(-90, 0, 1, 0);
-        drawRectangle(depth, height, 0);
-    glPopMatrix();
-
-    // Back face
-    glBindTexture(GL_TEXTURE_2D, texture[texIndex[3]]);
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    glPushMatrix();
-        glTranslatef(translateX, translateY, translateZ - depth / 2);
-        glRotatef(180, 0, 1, 0);
-        drawRectangle(length, height, 0);
-    glPopMatrix();
-
-    // Top face
-    glBindTexture(GL_TEXTURE_2D, texture[texIndex[4]]);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glPushMatrix();
-        glTranslatef(translateX, translateY + height / 2, translateZ);
-        glRotatef(-90, 1, 0, 0);
-        drawRectangle(length, depth, 0);
-    glPopMatrix();
-
-    // Bottom face
-    glBindTexture(GL_TEXTURE_2D, texture[texIndex[5]]);
-    glNormal3f(0.0f, -1.0f, 0.0f);
-    glPushMatrix();
-        glTranslatef(translateX, translateY - height / 2, translateZ);
-        glRotatef(90, 1, 0, 0);  // Changed from -90 to 90
-        drawRectangle(length, depth, 0);
+        glTranslatef(translateX, translateY, translateZ);
+        
+        // Right face
+        glBindTexture(GL_TEXTURE_2D, texture[texIndex[0]]);
+        glNormal3f(1.0f, 0.0f, 0.0f);
+        glPushMatrix();
+            glTranslatef(length / 2, 0.0f, 0.0f);
+            glRotatef(90, 0, 1, 0);
+            drawRectangle(depth, height);
+        glPopMatrix();
+        
+        // Front face
+        glBindTexture(GL_TEXTURE_2D, texture[texIndex[1]]);
+        glNormal3f(0.0f, 0.0f, 1.0f);
+        glPushMatrix();
+            glTranslatef(0.0f, 0.0f, depth / 2);
+            drawRectangle(length, height);
+        glPopMatrix();
+        
+        // Left face
+        glBindTexture(GL_TEXTURE_2D, texture[texIndex[2]]);
+        glNormal3f(-1.0f, 0.0f, 0.0f);
+        glPushMatrix();
+            glTranslatef(-length / 2, 0.0f, 0.0f);
+            glRotatef(-90, 0, 1, 0);
+            drawRectangle(depth, height);
+        glPopMatrix();
+        
+        // Back face
+        glBindTexture(GL_TEXTURE_2D, texture[texIndex[3]]);
+        glNormal3f(0.0f, 0.0f, -1.0f);
+        glPushMatrix();
+            glTranslatef(0.0f, 0.0f, -depth / 2);
+            glRotatef(180, 0, 1, 0);
+            drawRectangle(length, height);
+        glPopMatrix();
+        
+        // Top face
+        glBindTexture(GL_TEXTURE_2D, texture[texIndex[4]]);
+        glNormal3f(0.0f, 1.0f, 0.0f);
+        glPushMatrix();
+            glTranslatef(0.0f, height / 2, 0.0f);
+            glRotatef(-90, 1, 0, 0);
+            drawRectangle(length, depth);
+        glPopMatrix();
+        
+        // Bottom face
+        glBindTexture(GL_TEXTURE_2D, texture[texIndex[5]]);
+        glNormal3f(0.0f, -1.0f, 0.0f);
+        glPushMatrix();
+            glTranslatef(0.0f, -height / 2, 0.0f);
+            glRotatef(90, 1, 0, 0);
+            drawRectangle(length, depth);
+        glPopMatrix();
     glPopMatrix();
 }
 
@@ -235,6 +271,8 @@ void drawSteve() {
         -0.675f, 1.75f, 0.0f,
         1.25f, 3.5f, 2.5f // Y dari 0.0 sampai 10.0
     );
+
+    checkGLError("drawSteve");
 }
 
 void drawTree() {
@@ -262,99 +300,76 @@ void drawTree() {
     glBindTexture(GL_TEXTURE_2D, texture[31]);
     glPushMatrix();
         glTranslatef(5.0f, 30.0f, -20.0f);
-        drawRectangle(5.0f, 5.0f, 0);
+        drawRectangle(5.0f, 5.0f);
     glPopMatrix();
 
     // Tambahan daun azalea
     glBindTexture(GL_TEXTURE_2D, texture[30]);
     glPushMatrix();
         glTranslatef(-2.5f, 27.5f, -17.5f);
-        drawRectangle(5.0f, 5.0f, 0);
+        drawRectangle(5.0f, 5.0f);
     glPopMatrix();
+
+    checkGLError("drawTree");
 }
 
-void drawSphere(double radius, float translateX, float translateY,
-                float translateZ, int slices, int stacks) {
-    glPushMatrix();
-        glTranslatef(translateX, translateY, translateZ);
-        glBegin(GL_TRIANGLES);
-            for (int i = 0; i < stacks; ++i) {
-                double lat0 = M_PI * (-0.5 + (double)(i) / stacks);
-                double z0  = sin(lat0);
-                double zr0 =  cos(lat0);
-                double lat1 = M_PI * (-0.5 + (double)(i + 1) / stacks);
-                double z1 = sin(lat1);
-                double zr1 = cos(lat1);
+void drawBall(double radius, int slices, int stacks) {
+    for (int i = 0; i < stacks; ++i) {
+        double lat0 = M_PI * (-0.5 + (double)i / stacks);
+        double lat1 = M_PI * (-0.5 + (double)(i + 1) / stacks);
 
-                for (int j = 0; j <= slices; ++j) {
-                double lng = 2 * M_PI * (double)(j - 1) / slices;
-                    double x = cos(lng);
-                    double y = sin(lng);
+        double z0 = sin(lat0);
+        double z1 = sin(lat1);
+        double zr0 = cos(lat0);
+        double zr1 = cos(lat1);
 
-                    glTexCoord2f(
-                        (float)(j - 1) / slices,
-                        (float)(i) / stacks
-                    );
-                    glVertex3f(
-                        radius * x * zr0,
-                        radius * y * zr0,
-                        radius * z0
-                    );
-                    glTexCoord2f(
-                        (float)(j - 1) / slices,
-                        (float)(i + 1) / stacks
-                    );
-                    glVertex3f(
-                        radius * x * zr1,
-                        radius * y * zr1,
-                        radius * z1
-                    );
-                    glTexCoord2f(
-                        (float)j / slices,
-                        (float)(i + 1) / stacks
-                    );
-                    glVertex3f(
-                        radius * cos(lng + 2 * M_PI / slices) * zr1,
-                        radius * sin(lng + 2 * M_PI / slices) * zr1,
-                        radius * z1
-                    );
+        glBegin(GL_QUAD_STRIP);
+        for (int j = 0; j <= slices; ++j) {
+            double lng = 2 * M_PI * (double)j / slices;
+            double x = cos(lng);
+            double y = sin(lng);
 
-                    glTexCoord2f(
-                        (float)(j - 1) / slices,
-                        (float)(i) / stacks
-                    );
-                    glVertex3f(
-                        radius * x * zr0,
-                        radius * y * zr0,
-                        radius * z0
-                    );
-                    glTexCoord2f(
-                        (float)j / slices,
-                        (float)(i + 1) / stacks
-                    );
-                    glVertex3f(
-                        radius * cos(lng + 2 * M_PI / slices) * zr1,
-                        radius * sin(lng + 2 * M_PI / slices) * zr1,
-                        radius * z1
-                    );
-                    glTexCoord2f(
-                        (float)j / slices,
-                        (float)(i) / stacks
-                    );
-                    glVertex3f(
-                        radius * cos(lng + 2 * M_PI / slices) * zr0,
-                        radius * sin(lng + 2 * M_PI / slices) * zr0,
-                        radius * z0
-                    );
-                }
-            }
+            glNormal3f(x * zr0, y * zr0, z0);
+            glTexCoord2f((float)j / slices, (float)i / stacks);
+            glVertex3f(radius * x * zr0,
+                       radius * y * zr0,
+                       radius * z0);
+
+            glNormal3f(x * zr1, y * zr1, z1);
+            glTexCoord2f((float)j / slices, (float)(i + 1) / stacks);
+            glVertex3f(radius * x * zr1,
+                       radius * y * zr1,
+                       radius * z1);
+        }
         glEnd();
+    }
+}
+
+void drawSphere(double radius,
+                  float x, float y, float z,
+                  int slices, int stacks) {
+    glPushMatrix();
+        glTranslatef(x, y, z);
+        drawBall(radius, slices, stacks);
     glPopMatrix();
 }
 
 void drawPokeball() {
     glBindTexture(GL_TEXTURE_2D, texture[34]);
-    drawSphere(3.0f, 0.0f, 20.0f, 0.0f, 36, 36);
+
+    glPushMatrix();
+        glTranslatef(0.0f, ballY, 0.0f);
+
+        if (ballState == SHAKING) {
+            glRotatef(shakeAngle, 0, 1, 0);
+        }
+        if (ballState == CAUGHT) {
+            glScalef(1.1f, 0.8f, 1.1f);
+        }
+
+        drawSphere(3.0f, 0, 0, 0, 36, 36);
+    glPopMatrix();
+    checkGLError("drawPokeball");
 }
 
 void drawEarth() {
@@ -363,6 +378,47 @@ void drawEarth() {
         glTranslatef(0.0f, -8.0f, -10.0f);
         glutSolidTeapot(20.0);
     glPopMatrix();
+    checkGLError("drawEarth");
+}
+
+void drawSpace() {
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, 1, 0, 1);
+        glMatrixMode(GL_MODELVIEW);
+    
+        glPushMatrix();
+            glLoadIdentity();
+            // Disable depth & lighting
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_LIGHTING);
+
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, texture[36]);
+
+            glBegin(GL_QUADS);
+                glTexCoord2f(0,0); glVertex2f(0,0);
+                glTexCoord2f(1,0); glVertex2f(1,0);
+                glTexCoord2f(1,1); glVertex2f(1,1);
+                glTexCoord2f(0,1); glVertex2f(0,1);
+            glEnd();
+
+            // Restore states
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    checkGLError("drawSpace");
+}
+
+void applyLights() {
+    if (lightEnabled[0]) glEnable(GL_LIGHT0); else glDisable(GL_LIGHT0);
+    if (lightEnabled[1]) glEnable(GL_LIGHT1); else glDisable(GL_LIGHT1);
+    if (lightEnabled[2]) glEnable(GL_LIGHT2); else glDisable(GL_LIGHT2);
+    if (lightEnabled[3]) glEnable(GL_LIGHT3); else glDisable(GL_LIGHT3);
 }
 
 void display() {
@@ -370,23 +426,70 @@ void display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    drawSpace();
+    applyLights();
+
     float camX = radius * sinf(yaw);
     float camZ = radius * cosf(yaw);
 
     gluLookAt(camX, 0.0, camZ,  // Eye position
               0.0, 0.0, 0.0, // Look at point
-              0.0, 5.0, 0.0); // Up vector
+              0.0, 1.0, 0.0); // Up vector
     
-    GLfloat lightPos[] = { 0.0f, 10.0f, 10.0f, 1.0f };
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+    GLfloat sunDir[] = { -0.3f, -1.0f, 0.4f, 0.0f };
+    glLightfv(GL_LIGHT0, GL_POSITION, sunDir);
+
+    GLfloat fillPos[] = { 15.0f, 20.0f, -10.0f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_POSITION, fillPos);
+
+    GLfloat rimDir[] = { 0.5f, 0.8f, 0.5f, 0.0f };
+    glLightfv(GL_LIGHT2, GL_POSITION, rimDir);
+
+    GLfloat lightPos3[] =  { sinf(yaw), 0.0f, cosf(yaw), 1.0f };
+    glLightfv(GL_LIGHT3, GL_POSITION, lightPos3);
 
     // Mulai gambar objek
-    drawSteve();
+    if (steveVisible) {
+        drawSteve();
+    }
     drawTree();
     drawPokeball();
     drawEarth();
 
     glutSwapBuffers();
+    checkGLError("display");
+}
+
+void updateAnimation() {
+    if (ballState == FALLING) {
+        ballY -= ballFallSpeed;
+
+        if (ballY <= 13.0f) {   // near Steve’s head
+            ballY = 13.0f;
+            ballState = SHAKING;
+        }
+    }
+    else if (ballState == SHAKING) {
+        shakeAngle += 5.0f;
+
+        if (shakeAngle > 20.0f || shakeAngle < -20.0f) {
+            shakeAngle = -shakeAngle;
+            shakeCount++;
+        }
+
+        if (shakeCount >= 3) {
+            ballState = CAUGHT;
+            steveVisible = false;
+        }
+    }
+    else if (ballState == CAUGHT) {
+        ballY -= ballFallSpeed;
+
+        if (ballY <= 3.0f) {
+            ballY = 3.0f;
+        }
+    }
+    checkGLError("updateAnimation");
 }
 
 void keyInput(unsigned char key, int x, int y) {
@@ -394,27 +497,112 @@ void keyInput(unsigned char key, int x, int y) {
         case 27: // Tombol 'Esc' untuk keluar
             exit(0);
             break;
+        case 'W':
         case 'w': // Maju mendekati objek
             radius -= 2;
-            if (radius < 50.0f) radius = 50.0f;
+            if (radius < 70.0f) radius = 70.0f;
             glutPostRedisplay();
             break;
+        case 'S':
         case 's': // Mundur menjauhi objek
             radius += 2;
-            if (radius > 100.0f) radius = 100.0f;
+            if (radius > 150.0f) radius = 150.0f;
             glutPostRedisplay();
             break;
+        case 'A':
         case 'a': // Geser ke kiri
             yaw -= 0.5f;
             glutPostRedisplay();
             break;
+        case 'D':
         case 'd': // Geser ke kanan
             yaw += 0.5f;
             glutPostRedisplay();
             break;
+        case '0': // all lights OFF
+            for (int i = 0; i < 4; i++) lightEnabled[i] = false;
+            break;
+        case '9': // all lights ON
+            for (int i = 0; i < 4; i++) lightEnabled[i] = true;
+            break;
+        case '1':
+            lightEnabled[0] = !lightEnabled[0];
+            break;
+        case '2':
+            lightEnabled[1] = !lightEnabled[1];
+            break;
+        case '3':
+            lightEnabled[2] = !lightEnabled[2];
+            break;
+        case '4':
+            lightEnabled[3] = !lightEnabled[3];
+            break;
+        case 'P':
+        case 'p': // pause / resume animation
+            animationRunning = !animationRunning;
+            break;
+        case 'R':
+        case 'r': // reset animation
+            ballState = FALLING;
+            ballY = 25.0f;
+            shakeAngle = 0.0f;
+            shakeCount = 0;
+            steveVisible = true;
+            animationRunning = true;
+            break;
         default:
             break;
     }
+}
+
+void idle() {
+    if (animationRunning) {
+        updateAnimation();
+    }
+    glutPostRedisplay();
+}
+
+void specialInput(int key, int x, int y) {
+    switch (key) {
+        case GLUT_KEY_UP:
+            ballFallSpeed += 0.05f;
+            if (ballFallSpeed > 2.0f) ballFallSpeed = 2.0f;
+            break;
+
+        case GLUT_KEY_DOWN:
+            ballFallSpeed -= 0.05f;
+            if (ballFallSpeed < 0.05f) ballFallSpeed = 0.05f;
+            break;
+    }
+}
+
+void setup() {
+    glEnable(GL_LIGHT0);
+    GLfloat sunDiffuse[]  = { 1.0f, 0.98f, 0.95f, 1.0f };
+    GLfloat sunSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat sunAmbient[]  = { 0.2f, 0.2f, 0.2f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, sunDiffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, sunSpecular);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, sunAmbient);
+
+    glEnable(GL_LIGHT1);
+    GLfloat fillDiffuse[]  = { 0.9f, 0.6f, 0.3f, 1.0f };
+    GLfloat fillAmbient[] = { 0.1f, 0.05f, 0.02f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, fillDiffuse);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, fillDiffuse);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, fillAmbient);
+
+    glEnable(GL_LIGHT2);
+    GLfloat rimDiffuse[] = { 0.3f, 0.5f, 1.0f, 1.0f };
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, rimDiffuse);
+    glLightfv(GL_LIGHT2, GL_SPECULAR, rimDiffuse);
+
+    glEnable(GL_LIGHT3);
+    GLfloat white3[] = { 0.95f, 0.95f, 0.95f, 1.0f };
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, white3);
+    glLightfv(GL_LIGHT3, GL_SPECULAR, white3);
+
+    checkGLError("setup");
 }
 
 int main(int argc, char** argv) {
@@ -431,22 +619,17 @@ int main(int argc, char** argv) {
 
     glEnable(GL_LIGHTING);
 
-    glEnable(GL_LIGHT0);
-    GLfloat white[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
-
-    glEnable(GL_LIGHT1);
-    glEnable(GL_LIGHT2);
+    setup();
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    //glClearColor(0.8f, 0.5f, 0.2f, 1.0f); // Warna langit senja
 
     loadAllTextures();
 
     glutReshapeFunc(myReshape);
     glutDisplayFunc(display);
     glutKeyboardFunc(keyInput);
+    glutSpecialFunc(specialInput);
+    glutIdleFunc(idle);
 
     glutMainLoop();
     return 0;
