@@ -1,61 +1,41 @@
 /**
- ============================================================================
-  File        : main.cpp
-  Judul       : Steve Kejatuhan Pokeball di Bawah Oak Tree
-  Deskripsi   :
-    Program ini merupakan aplikasi grafika 3D berbasis OpenGL
-    (menggunakan FreeGLUT dan GLEW) yang menampilkan sebuah scene
-    interaktif berisi karakter Steve (Minecraft), pohon, Pokeball
-    dengan animasi, teapot sebagai Earth, serta background luar angkasa.
-
-    Aplikasi ini menggunakan OpenGL fixed-function pipeline dan
-    menekankan pada konsep dasar grafika komputer, seperti:
-    - Hierarchical modeling menggunakan transformasi bertingkat
-    - Texture mapping pada objek 3D
-    - Pencahayaan menggunakan beberapa sumber cahaya
-    - Animasi sederhana berbasis state machine
-    - Kontrol kamera dan interaksi pengguna melalui keyboard
-    - Pengecekan error OpenGL dan validasi file tekstur
-
-  Fitur Utama :
-    - Karakter Steve dibangun dari beberapa cuboid bertekstur
-    - Pohon terdiri dari batang dan lapisan daun
-    - Pokeball memiliki animasi jatuh, bergoyang, dan menangkap Steve
-    - Beberapa light source yang dapat diaktifkan / dimatikan
-    - Kamera orbit yang dapat digerakkan oleh pengguna
-    - Background 2D bertekstur menggunakan proyeksi ortografik
-
-  Kontrol :
-    W / S        : Zoom kamera mendekat / menjauh
-    A / D        : Rotasi kamera ke kiri / kanan
-    Panah Atas   : Menambah kecepatan jatuh Pokeball
-    Panah Bawah  : Mengurangi kecepatan jatuh Pokeball
-    P            : Pause / lanjutkan animasi
-    R            : Reset animasi
-    1 – 4        : Toggle masing-masing lampu
-    0            : Mematikan semua lampu
-    9            : Menyalakan semua lampu
-    ESC          : Keluar dari program
-
-  Catatan :
-    - Program ini tidak menggunakan shader (GLSL), sehingga
-      pengecekan error shader tidak diperlukan.
-    - Pengecekan error dilakukan melalui glGetError()
-      dan validasi pemuatan file tekstur.
- ============================================================================
-*/
-
-/**
  * Kelompok 1 UAS Komputer Grafik:
  * - 412024018 - Triemas Putra
  * - 412024019 - Richard Devin Sutisna
  * - 412024034 - Jonathan Siswoyo
  * - 412024037 - Alejandro Julian Mac Arthur Simanjuntak
- * - 412024038 - Erivol Patricio Hutadjulu
+ * - 412024038 - Erivol Patricio Hutadjulu (Tidak Mengerjakan)
  * - 412024043 - Andrew Linardi
+ * 
+ * Steve Kejatuhan Pokeball di Bawah Oak Tree
+ * 
+ * Program ini OpenGL (menggunakan FreeGLUT dan GLEW) yang menampilkan sebuah scene
+ * berisi karakter Steve (Minecraft), pohon, Pokeball (untuk menangkap Steve)
+ * dengan animasi, teapot sebagai Earth, serta background luar angkasa.
+ * 
+ * Fitur Utama :
+ * - Karakter Steve dibangun dari beberapa cuboid bertekstur
+ * - Pohon terdiri dari batang dan lapisan daun
+ * - Pokeball memiliki animasi jatuh, bergoyang, dan menangkap Steve
+ * - Beberapa light source yang dapat diaktifkan / dimatikan
+ * - Kamera orbit yang dapat digerakkan oleh pengguna
+ * - Background 2D bertekstur menggunakan proyeksi ortografik
+ * 
+ * Kontrol :
+ * W / S        : Zoom kamera mendekat / menjauh
+ * A / D        : Rotasi kamera ke kiri / kanan
+ * Panah Atas   : Menambah kecepatan jatuh Pokeball
+ * Panah Bawah  : Mengurangi kecepatan jatuh Pokeball
+ * P            : Pause / lanjutkan animasi
+ * R            : Reset animasi
+ * 1 – 4        : Toggle masing-masing lampu
+ * 0            : Mematikan semua lampu
+ * 9            : Menyalakan semua lampu
+ * ESC          : Keluar dari program
  */
 
 /**
+ * Referensi Sistem Koordinat:
  * X+ Menuju Kanan, X- Menuju Kiri
  * Y+ Menuju Atas, Y- Menuju Bawah
  * Z+ Menuju Kedepan (Terlihat lebih besar karena mendekat),
@@ -65,6 +45,8 @@
 // Include glew sebelum freeglut biar glew nya gak tantrum
 #include "include/GL/glew.h"
 #include "include/GL/freeglut.h"
+// Include getBMP untuk load texture dari file BMP dan cmath untuk kalkulasi matematika
+// seperti sin dan cos
 #include "include/getBMP.h"
 #include <cmath>
 
@@ -211,18 +193,6 @@ void loadAllTextures() {
 }
 
 /**
- * function myReshape untuk mengatur ukuran viewport dan gluPerspective
- * dipanggil oleh glutReshapeFunc setiap kali ada perubahan
- */
-void myReshape(int w, int h) {
-    glViewport(0, 0, w, h);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0, (double)w / (double)h, 1.0, 500.0);
-}
-
-/**
  * Menggambar sebuah persegi panjang bertekstur
  * dengan posisi pusat di titik origin.
  * Digunakan sebagai dasar untuk sisi kubus dan background.
@@ -314,6 +284,113 @@ void drawCube(int texIndex[],
             drawRectangle(length, depth);
         glPopMatrix();
     glPopMatrix();
+}
+
+/**
+ * Membentuk mesh bola bertekstur menggunakan quad strip.
+ * Normal dihitung per-vertex untuk mendukung pencahayaan.
+ *
+ * @param radius Jari-jari bola
+ * @param slices Jumlah potongan horizontal
+ * @param stacks Jumlah potongan vertikal
+ */
+void drawBall(double radius, int slices, int stacks) {
+    for (int i = 0; i < stacks; ++i) {
+        double lat0 = M_PI * (-0.5 + (double)i / stacks);
+        double lat1 = M_PI * (-0.5 + (double)(i + 1) / stacks);
+
+        double z0 = sin(lat0);
+        double z1 = sin(lat1);
+        double zr0 = cos(lat0);
+        double zr1 = cos(lat1);
+
+        glBegin(GL_QUAD_STRIP);
+        for (int j = 0; j <= slices; ++j) {
+            double lng = 2 * M_PI * (double)j / slices;
+            double x = cos(lng);
+            double y = sin(lng);
+
+            glNormal3f(x * zr0, y * zr0, z0);
+            glTexCoord2f((float)j / slices, (float)i / stacks);
+            glVertex3f(radius * x * zr0,
+                       radius * y * zr0,
+                       radius * z0);
+
+            glNormal3f(x * zr1, y * zr1, z1);
+            glTexCoord2f((float)j / slices, (float)(i + 1) / stacks);
+            glVertex3f(radius * x * zr1,
+                       radius * y * zr1,
+                       radius * z1);
+        }
+        glEnd();
+    }
+}
+
+/**
+ * Menggambar bola pada posisi tertentu di dunia 3D.
+ * Merupakan pembungkus dari fungsi drawBall.
+ *
+ * @param radius Jari-jari bola
+ * @param x Posisi X
+ * @param y Posisi Y
+ * @param z Posisi Z
+ * @param slices Jumlah slices
+ * @param stacks Jumlah stacks
+ */
+void drawSphere(double radius,
+                  float x, float y, float z,
+                  int slices, int stacks) {
+    glPushMatrix();
+        glTranslatef(x, y, z);
+        drawBall(radius, slices, stacks);
+    glPopMatrix();
+}
+
+/**
+ * Menggambar background 2D bertekstur dengan proyeksi ortografik.
+ */
+void drawSpace() {
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, 1, 0, 1);
+        glMatrixMode(GL_MODELVIEW);
+    
+        glPushMatrix();
+            glLoadIdentity();
+            // Matikan depth test dan lighting agar background selalu terlihat
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_LIGHTING);
+
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, texture[36]);
+
+            glBegin(GL_QUADS);
+                glTexCoord2f(0,0); glVertex2f(0,0);
+                glTexCoord2f(1,0); glVertex2f(1,0);
+                glTexCoord2f(1,1); glVertex2f(1,1);
+                glTexCoord2f(0,1); glVertex2f(0,1);
+            glEnd();
+
+            // Kembalikan state depth test dan lighting
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_LIGHTING);
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    checkGLError("drawSpace");
+}
+
+/**
+ * Mengaktifkan atau menonaktifkan sumber cahaya
+ * berdasarkan kondisi array lightEnabled yang diatur pengguna.
+ */
+void applyLights() {
+    if (lightEnabled[0]) glEnable(GL_LIGHT0); else glDisable(GL_LIGHT0);
+    if (lightEnabled[1]) glEnable(GL_LIGHT1); else glDisable(GL_LIGHT1);
+    if (lightEnabled[2]) glEnable(GL_LIGHT2); else glDisable(GL_LIGHT2);
+    if (lightEnabled[3]) glEnable(GL_LIGHT3); else glDisable(GL_LIGHT3);
 }
 
 /**
@@ -414,66 +491,6 @@ void drawTree() {
 }
 
 /**
- * Membentuk mesh bola bertekstur menggunakan quad strip.
- * Normal dihitung per-vertex untuk mendukung pencahayaan.
- *
- * @param radius Jari-jari bola
- * @param slices Jumlah potongan horizontal
- * @param stacks Jumlah potongan vertikal
- */
-void drawBall(double radius, int slices, int stacks) {
-    for (int i = 0; i < stacks; ++i) {
-        double lat0 = M_PI * (-0.5 + (double)i / stacks);
-        double lat1 = M_PI * (-0.5 + (double)(i + 1) / stacks);
-
-        double z0 = sin(lat0);
-        double z1 = sin(lat1);
-        double zr0 = cos(lat0);
-        double zr1 = cos(lat1);
-
-        glBegin(GL_QUAD_STRIP);
-        for (int j = 0; j <= slices; ++j) {
-            double lng = 2 * M_PI * (double)j / slices;
-            double x = cos(lng);
-            double y = sin(lng);
-
-            glNormal3f(x * zr0, y * zr0, z0);
-            glTexCoord2f((float)j / slices, (float)i / stacks);
-            glVertex3f(radius * x * zr0,
-                       radius * y * zr0,
-                       radius * z0);
-
-            glNormal3f(x * zr1, y * zr1, z1);
-            glTexCoord2f((float)j / slices, (float)(i + 1) / stacks);
-            glVertex3f(radius * x * zr1,
-                       radius * y * zr1,
-                       radius * z1);
-        }
-        glEnd();
-    }
-}
-
-/**
- * Menggambar bola pada posisi tertentu di dunia 3D.
- * Merupakan pembungkus dari fungsi drawBall.
- *
- * @param radius Jari-jari bola
- * @param x Posisi X
- * @param y Posisi Y
- * @param z Posisi Z
- * @param slices Jumlah slices
- * @param stacks Jumlah stacks
- */
-void drawSphere(double radius,
-                  float x, float y, float z,
-                  int slices, int stacks) {
-    glPushMatrix();
-        glTranslatef(x, y, z);
-        drawBall(radius, slices, stacks);
-    glPopMatrix();
-}
-
-/**
  * Menggambar Pokeball dan menerapkan transformasi
  * berdasarkan state animasi (FALLING, SHAKING, CAUGHT).
  */
@@ -506,53 +523,6 @@ void drawEarth() {
         glutSolidTeapot(20.0);
     glPopMatrix();
     checkGLError("drawEarth");
-}
-
-/**
- * Menggambar background 2D bertekstur dengan proyeksi ortografik.
- */
-void drawSpace() {
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-        glLoadIdentity();
-        gluOrtho2D(0, 1, 0, 1);
-        glMatrixMode(GL_MODELVIEW);
-    
-        glPushMatrix();
-            glLoadIdentity();
-            // Disable depth & lighting
-            glDisable(GL_DEPTH_TEST);
-            glDisable(GL_LIGHTING);
-
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, texture[36]);
-
-            glBegin(GL_QUADS);
-                glTexCoord2f(0,0); glVertex2f(0,0);
-                glTexCoord2f(1,0); glVertex2f(1,0);
-                glTexCoord2f(1,1); glVertex2f(1,1);
-                glTexCoord2f(0,1); glVertex2f(0,1);
-            glEnd();
-
-            // Restore states
-            glEnable(GL_DEPTH_TEST);
-            glEnable(GL_LIGHTING);
-        glPopMatrix();
-        glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-    checkGLError("drawSpace");
-}
-
-/**
- * Mengaktifkan atau menonaktifkan sumber cahaya
- * berdasarkan input pengguna.
- */
-void applyLights() {
-    if (lightEnabled[0]) glEnable(GL_LIGHT0); else glDisable(GL_LIGHT0);
-    if (lightEnabled[1]) glEnable(GL_LIGHT1); else glDisable(GL_LIGHT1);
-    if (lightEnabled[2]) glEnable(GL_LIGHT2); else glDisable(GL_LIGHT2);
-    if (lightEnabled[3]) glEnable(GL_LIGHT3); else glDisable(GL_LIGHT3);
 }
 
 /**
@@ -601,7 +571,8 @@ void display() {
 
 /**
  * Mengatur logika animasi Pokeball berdasarkan kondisi
- * Pokeball (FALLING, SHAKING, CAUGHT).
+ * Pokeball (FALLING, SHAKING, CAUGHT). Function ini dipanggil
+ * terus menerus dalam function idle.
  */
 void updateAnimation() {
     if (ballState == FALLING) {
@@ -633,6 +604,58 @@ void updateAnimation() {
         }
     }
     checkGLError("updateAnimation");
+}
+
+/**
+ * Melakukan inisialisasi pencahayaan,
+ * termasuk diffuse, ambient, dan specular, serta texture.
+ */
+void setup() {
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    
+    glEnable(GL_LIGHT0);
+    GLfloat sunDiffuse[]  = { 1.0f, 0.98f, 0.95f, 1.0f };
+    GLfloat sunSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat sunAmbient[]  = { 0.2f, 0.2f, 0.2f, 1.0f };
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, sunDiffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, sunSpecular);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, sunAmbient);
+
+    glEnable(GL_LIGHT1);
+    GLfloat fillDiffuse[]  = { 0.9f, 0.6f, 0.3f, 1.0f };
+    GLfloat fillAmbient[] = { 0.1f, 0.05f, 0.02f, 1.0f };
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, fillDiffuse);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, fillDiffuse);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, fillAmbient);
+
+    glEnable(GL_LIGHT2);
+    GLfloat rimDiffuse[] = { 0.3f, 0.5f, 1.0f, 1.0f };
+    glLightfv(GL_LIGHT2, GL_DIFFUSE, rimDiffuse);
+    glLightfv(GL_LIGHT2, GL_SPECULAR, rimDiffuse);
+
+    glEnable(GL_LIGHT3);
+    GLfloat white3[] = { 0.95f, 0.95f, 0.95f, 1.0f };
+    glLightfv(GL_LIGHT3, GL_DIFFUSE, white3);
+    glLightfv(GL_LIGHT3, GL_SPECULAR, white3);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    loadAllTextures();
+
+    checkGLError("setup");
+}
+
+/**
+ * function myReshape untuk mengatur ukuran viewport dan gluPerspective
+ * dipanggil oleh glutReshapeFunc setiap kali ada perubahan
+ */
+void myReshape(int w, int h) {
+    glViewport(0, 0, w, h);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, (double)w / (double)h, 1.0, 500.0);
 }
 
 /**
@@ -703,17 +726,6 @@ void keyInput(unsigned char key, int x, int y) {
 }
 
 /**
- * Fungsi idle yang dipanggil terus-menerus oleh glutIdleFunc
- * pada main untuk menjalankan animasi.
- */
-void idle() {
-    if (animationRunning) {
-        updateAnimation();
-    }
-    glutPostRedisplay();
-}
-
-/**
  * Menangani input tombol khusus yaitu
  * arrow key untuk mengatur kecepatan animasi.
  */
@@ -732,43 +744,14 @@ void specialInput(int key, int x, int y) {
 }
 
 /**
- * Melakukan inisialisasi pencahayaan,
- * termasuk diffuse, ambient, dan specular, serta texture.
+ * Fungsi idle yang dipanggil terus-menerus oleh glutIdleFunc
+ * pada main untuk menjalankan animasi.
  */
-void setup() {
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    
-    glEnable(GL_LIGHT0);
-    GLfloat sunDiffuse[]  = { 1.0f, 0.98f, 0.95f, 1.0f };
-    GLfloat sunSpecular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat sunAmbient[]  = { 0.2f, 0.2f, 0.2f, 1.0f };
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, sunDiffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, sunSpecular);
-    glLightfv(GL_LIGHT0, GL_AMBIENT, sunAmbient);
-
-    glEnable(GL_LIGHT1);
-    GLfloat fillDiffuse[]  = { 0.9f, 0.6f, 0.3f, 1.0f };
-    GLfloat fillAmbient[] = { 0.1f, 0.05f, 0.02f, 1.0f };
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, fillDiffuse);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, fillDiffuse);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, fillAmbient);
-
-    glEnable(GL_LIGHT2);
-    GLfloat rimDiffuse[] = { 0.3f, 0.5f, 1.0f, 1.0f };
-    glLightfv(GL_LIGHT2, GL_DIFFUSE, rimDiffuse);
-    glLightfv(GL_LIGHT2, GL_SPECULAR, rimDiffuse);
-
-    glEnable(GL_LIGHT3);
-    GLfloat white3[] = { 0.95f, 0.95f, 0.95f, 1.0f };
-    glLightfv(GL_LIGHT3, GL_DIFFUSE, white3);
-    glLightfv(GL_LIGHT3, GL_SPECULAR, white3);
-    
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    loadAllTextures();
-
-    checkGLError("setup");
+void idle() {
+    if (animationRunning) {
+        updateAnimation();
+    }
+    glutPostRedisplay();
 }
 
 /**
