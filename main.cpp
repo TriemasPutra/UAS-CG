@@ -7,6 +7,16 @@
  * - 412024038 - Erivol Patricio Hutadjulu (Tidak Mengerjakan)
  * - 412024043 - Andrew Linardi
  * 
+ * Panduan Umum:
+ * Buka folder proyek, lalu compile main.cpp dengan CTRL + SHIFT + B
+ * Cek pada folder build untuk menemukan executable program (main.exe)
+ * Kemudian Run Executable.
+ * Folder ini di zip bersama dengan library FreeGLUT dan GLEW secara lokal,
+ * sehingga tidak perlu instalasi library tambahan.
+ * 
+ * Fallback: Jika mengalami gangguan pada library lokal,
+ * install FreeGLUT dan GLEW secara global, lalu edit .vscode/tasks.json
+ *
  * Steve Kejatuhan Pokeball di Bawah Oak Tree
  * 
  * Program ini OpenGL (menggunakan FreeGLUT dan GLEW) yang menampilkan sebuah scene
